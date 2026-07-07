@@ -1,75 +1,62 @@
 package com.example.myapplication;
 
+import android.content.Intent;
 import android.os.Bundle;
-import android.util.Patterns;
-import android.widget.TextView;
+import android.text.TextUtils;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
-import com.google.android.material.button.MaterialButton;
-import com.google.android.material.textfield.TextInputEditText;
+import com.example.myapplication.databinding.ActivityRegisterBinding;
 import com.google.firebase.auth.FirebaseAuth;
 
 public class RegisterActivity extends AppCompatActivity {
 
-    private TextInputEditText etName, etEmail, etPassword;
-    private MaterialButton btnRegister;
-    private TextView tvLogin;
+    private ActivityRegisterBinding binding;
     private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_register);
+        binding = ActivityRegisterBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         mAuth = FirebaseAuth.getInstance();
 
-        etName = findViewById(R.id.etName);
-        etEmail = findViewById(R.id.etEmail);
-        etPassword = findViewById(R.id.etPassword);
-        btnRegister = findViewById(R.id.btnRegister);
-        tvLogin = findViewById(R.id.tvLogin);
-
-        btnRegister.setOnClickListener(v -> registerUser());
-
-        tvLogin.setOnClickListener(v -> finish());
+        binding.btnRegister.setOnClickListener(v -> registerUser());
+        binding.tvLogin.setOnClickListener(v -> finish());
     }
 
     private void registerUser() {
-        String name = etName.getText().toString().trim();
-        String email = etEmail.getText().toString().trim();
-        String password = etPassword.getText().toString().trim();
+        String fullName = binding.etFullName.getText().toString().trim();
+        String email = binding.etEmail.getText().toString().trim();
+        String password = binding.etPassword.getText().toString().trim();
+        String confirmPassword = binding.etConfirmPassword.getText().toString().trim();
 
-        // Validation
-        if (name.isEmpty()) {
-            etName.setError("Full name is required");
-            etName.requestFocus();
+        if (TextUtils.isEmpty(fullName)) {
+            binding.etFullName.setError("Full Name is required");
             return;
         }
-
-        if (email.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            etEmail.setError("Valid email is required");
-            etEmail.requestFocus();
+        if (TextUtils.isEmpty(email)) {
+            binding.etEmail.setError("Email is required");
             return;
         }
-
-        if (password.length() < 6) {
-            etPassword.setError("Password must be at least 6 characters");
-            etPassword.requestFocus();
+        if (TextUtils.isEmpty(password)) {
+            binding.etPassword.setError("Password is required");
             return;
         }
-
-        btnRegister.setEnabled(false);
+        if (!password.equals(confirmPassword)) {
+            binding.etConfirmPassword.setError("Passwords do not match");
+            return;
+        }
 
         mAuth.createUserWithEmailAndPassword(email, password)
-            .addOnCompleteListener(this, task -> {
-                btnRegister.setEnabled(true);
-                if (task.isSuccessful()) {
-                    Toast.makeText(RegisterActivity.this, "Account Created Successfully!", Toast.LENGTH_SHORT).show();
-                    finish(); // Return to Login
-                } else {
-                    Toast.makeText(RegisterActivity.this, "Error: " + task.getException().getMessage(), 
-                        Toast.LENGTH_LONG).show();
-                }
-            });
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Toast.makeText(this, "Registration successful!", Toast.LENGTH_SHORT).show();
+                        startActivity(new Intent(RegisterActivity.this, MainActivity.class));
+                        finishAffinity();
+                    } else {
+                        Toast.makeText(this, "Registration failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 }
