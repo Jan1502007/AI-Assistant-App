@@ -1,69 +1,180 @@
 package com.example.myapplication;
 
+import android.Manifest;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
 import android.os.Bundle;
-import android.widget.EditText;
-import android.widget.ImageButton;
+import android.view.View;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.example.myapplication.databinding.ActivityMainBinding;
+
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MessageAdapter.OnRetryListener {
 
-    RecyclerView recyclerView;
-    EditText etMessage;
-    FloatingActionButton btnSend;
-    List<Message> messageList;
-    MessageAdapter messageAdapter;
+    private ActivityMainBinding binding;
+    private MessageAdapter adapter;
+    private List<Message> messageList;
+    private FirebaseAuthManager authManager;
+    private GroqService groqService;
+    private GroqSpeechService speechService;
+    private AudioRecorder audioRecorder;
+    private String lastUserMessage = "";
+    private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+
+        authManager = new FirebaseAuthManager();
+        
+        // Initialize Groq service
+        groqService = new GroqService();
+        speechService = new GroqSpeechService();
+        audioRecorder = new AudioRecorder(this);
 
         messageList = new ArrayList<>();
+        adapter = new MessageAdapter(messageList, this);
+        binding.recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        binding.recyclerView.setAdapter(adapter);
 
-        recyclerView = findViewById(R.id.recyclerView);
-        etMessage = findViewById(R.id.etMessage);
-        btnSend = findViewById(R.id.btnSend);
+        updateEmptyView();
 
-        // Setup RecyclerView
-        messageAdapter = new MessageAdapter(messageList);
-        recyclerView.setAdapter(messageAdapter);
-        LinearLayoutManager llm = new LinearLayoutManager(this);
-        llm.setStackFromEnd(true);
-        recyclerView.setLayoutManager(llm);
+        binding.btnSend.setOnClickListener(v -> sendMessage());
+        binding.btnMic.setOnClickListener(v -> toggleRecording());
+        binding.ivLogout.setOnClickListener(v -> {
+            authManager.logout();
+            startActivity(new Intent(MainActivity.this, LoginActivity.class));
+            finish();
+        });
+    }
 
-        btnSend.setOnClickListener(v -> {
-            String question = etMessage.getText().toString().trim();
-            if (!question.isEmpty()) {
-                addToChat(question, Message.SENT_BY_ME);
-                etMessage.setText("");
-                callAI(question);
+    private void toggleRecording() {
+        if (audioRecorder.isRecording()) {
+            stopRecording();
+        } else {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, REQUEST_RECORD_AUDIO_PERMISSION);
+            } else {
+                startRecording();
+            }
+        }
+    }
+
+    private void startRecording() {
+        try {
+            audioRecorder.startRecording();
+            binding.btnMic.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(this, android.R.color.holo_red_light)));
+            Toast.makeText(this, "Recording started...", Toast.LENGTH_SHORT).show();
+        } catch (IOException e) {
+            Toast.makeText(this, "Recording failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void stopRecording() {
+        File audioFile = audioRecorder.stopRecording();
+        binding.btnMic.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.background)));
+        
+        if (audioFile != null) {
+            Toast.makeText(this, "Transcribing...", Toast.LENGTH_SHORT).show();
+            speechService.transcribe(audioFile, new GroqSpeechService.SpeechCallback() {
+                @Override
+                public void onTranscription(String text) {
+                    binding.etMessage.setText(text);
+                }
+
+                @Override
+                public void onError(String error) {
+                    Toast.makeText(MainActivity.this, error, Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_RECORD_AUDIO_PERMISSION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                startRecording();
+            } else {
+                Toast.makeText(this, "Permission denied to record audio", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void sendMessage() {
+        String text = binding.etMessage.getText().toString().trim();
+        if (text.isEmpty()) return;
+
+        lastUserMessage = text;
+        addMessage(new Message(text, Message.TYPE_USER));
+        binding.etMessage.setText("");
+        
+        callGroq(text);
+    }
+
+    private void callGroq(String prompt) {
+        // Show loading indicator
+        addMessage(new Message("...", Message.TYPE_LOADING));
+
+        groqService.sendMessage(prompt, new GroqService.GroqCallback() {
+            @Override
+            public void onSuccess(String response) {
+                removeLastMessage(); // Remove loading
+                addMessage(new Message(response, Message.TYPE_AI));
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                removeLastMessage(); // Remove loading
+                addMessage(new Message(errorMessage, Message.TYPE_ERROR));
             }
         });
     }
 
-    void addToChat(String message, String sentBy) {
-        runOnUiThread(() -> {
-            messageList.add(new Message(message, sentBy));
-            messageAdapter.notifyDataSetChanged();
-            recyclerView.smoothScrollToPosition(messageAdapter.getItemCount());
-        });
+    private void addMessage(Message message) {
+        messageList.add(message);
+        adapter.notifyItemInserted(messageList.size() - 1);
+        binding.recyclerView.smoothScrollToPosition(messageList.size() - 1);
+        updateEmptyView();
     }
 
-    void callAI(String question) {
-        // We will integrate Gemini or OpenAI here in the next step!
-        // For now, let's just make a simple echo bot
-        addToChat("Typing...", Message.SENT_BY_BOT);
-        
-        // Simulate a delay
-        new android.os.Handler().postDelayed(() -> {
-            // Remove "Typing..." and add real response
-            messageList.remove(messageList.size() - 1);
-            addToChat("You said: " + question + ". I am your AI Assistant!", Message.SENT_BY_BOT);
-        }, 1500);
+    private void removeLastMessage() {
+        if (!messageList.isEmpty()) {
+            int lastIndex = messageList.size() - 1;
+            messageList.remove(lastIndex);
+            adapter.notifyItemRemoved(lastIndex);
+        }
+    }
+
+    private void updateEmptyView() {
+        if (messageList.isEmpty()) {
+            binding.emptyView.setVisibility(View.VISIBLE);
+        } else {
+            binding.emptyView.setVisibility(View.GONE);
+        }
+    }
+
+    @Override
+    public void onRetry() {
+        if (!lastUserMessage.isEmpty()) {
+            if (!messageList.isEmpty() && messageList.get(messageList.size() - 1).getType() == Message.TYPE_ERROR) {
+                removeLastMessage();
+                callGroq(lastUserMessage);
+            }
+        }
     }
 }

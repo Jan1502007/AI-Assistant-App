@@ -3,56 +3,87 @@ package com.example.myapplication;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
+import android.widget.Button;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
-public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHolder> {
+public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    List<Message> messageList;
+    private List<Message> messages;
+    private OnRetryListener retryListener;
 
-    public MessageAdapter(List<Message> messageList) {
-        this.messageList = messageList;
+    public interface OnRetryListener {
+        void onRetry();
+    }
+
+    public MessageAdapter(List<Message> messages, OnRetryListener retryListener) {
+        this.messages = messages;
+        this.retryListener = retryListener;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return messages.get(position).getType();
     }
 
     @NonNull
     @Override
-    public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View chatView = LayoutInflater.from(parent.getContext()).inflate(R.layout.chat_item, parent, false);
-        return new MyViewHolder(chatView);
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+        switch (viewType) {
+            case Message.TYPE_USER:
+                return new MessageViewHolder(inflater.inflate(R.layout.chat_item_user, parent, false));
+            case Message.TYPE_LOADING:
+                return new LoadingViewHolder(inflater.inflate(R.layout.chat_item_loading, parent, false));
+            case Message.TYPE_ERROR:
+                return new ErrorViewHolder(inflater.inflate(R.layout.chat_item_error, parent, false));
+            case Message.TYPE_AI:
+            default:
+                return new MessageViewHolder(inflater.inflate(R.layout.chat_item_ai, parent, false));
+        }
     }
 
     @Override
-    public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
-        Message message = messageList.get(position);
-        if (message.getSentBy().equals(Message.SENT_BY_ME)) {
-            holder.leftChatView.setVisibility(View.GONE);
-            holder.rightChatView.setVisibility(View.VISIBLE);
-            holder.rightTextView.setText(message.getMessage());
-        } else {
-            holder.rightChatView.setVisibility(View.GONE);
-            holder.leftChatView.setVisibility(View.VISIBLE);
-            holder.leftTextView.setText(message.getMessage());
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        Message message = messages.get(position);
+        if (holder instanceof MessageViewHolder) {
+            ((MessageViewHolder) holder).tvMessage.setText(message.getContent());
+        } else if (holder instanceof ErrorViewHolder) {
+            ((ErrorViewHolder) holder).tvErrorMessage.setText(message.getContent());
+            ((ErrorViewHolder) holder).btnRetry.setOnClickListener(v -> {
+                if (retryListener != null) retryListener.onRetry();
+            });
         }
     }
 
     @Override
     public int getItemCount() {
-        return messageList.size();
+        return messages.size();
     }
 
-    public class MyViewHolder extends RecyclerView.ViewHolder {
-        LinearLayout leftChatView, rightChatView;
-        TextView leftTextView, rightTextView;
-
-        public MyViewHolder(@NonNull View itemView) {
+    static class MessageViewHolder extends RecyclerView.ViewHolder {
+        TextView tvMessage;
+        public MessageViewHolder(@NonNull View itemView) {
             super(itemView);
-            leftChatView = itemView.findViewById(R.id.left_chat_view);
-            rightChatView = itemView.findViewById(R.id.right_chat_view);
-            leftTextView = itemView.findViewById(R.id.left_chat_text_view);
-            rightTextView = itemView.findViewById(R.id.right_chat_text_view);
+            tvMessage = itemView.findViewById(R.id.tvMessage);
+        }
+    }
+
+    static class LoadingViewHolder extends RecyclerView.ViewHolder {
+        public LoadingViewHolder(@NonNull View itemView) {
+            super(itemView);
+        }
+    }
+
+    static class ErrorViewHolder extends RecyclerView.ViewHolder {
+        TextView tvErrorMessage;
+        Button btnRetry;
+        public ErrorViewHolder(@NonNull View itemView) {
+            super(itemView);
+            tvErrorMessage = itemView.findViewById(R.id.tvErrorMessage);
+            btnRetry = itemView.findViewById(R.id.btnRetry);
         }
     }
 }
