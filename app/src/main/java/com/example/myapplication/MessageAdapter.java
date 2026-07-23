@@ -3,16 +3,22 @@ package com.example.myapplication;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private List<Message> messages;
     private OnRetryListener retryListener;
+    private SimpleDateFormat timeFormat = new SimpleDateFormat("h:mm a", Locale.getDefault());
 
     public interface OnRetryListener {
         void onRetry();
@@ -48,14 +54,29 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         Message message = messages.get(position);
+        
+        // Add entry animation
+        setAnimation(holder.itemView, position);
+
         if (holder instanceof MessageViewHolder) {
-            ((MessageViewHolder) holder).tvMessage.setText(message.getContent());
+            MessageViewHolder msgHolder = (MessageViewHolder) holder;
+            msgHolder.tvMessage.setText(message.getContent());
+            if (msgHolder.tvTimestamp != null) {
+                msgHolder.tvTimestamp.setText(timeFormat.format(new Date(message.getTimestamp())));
+            }
         } else if (holder instanceof ErrorViewHolder) {
             ((ErrorViewHolder) holder).tvErrorMessage.setText(message.getContent());
             ((ErrorViewHolder) holder).btnRetry.setOnClickListener(v -> {
                 if (retryListener != null) retryListener.onRetry();
             });
         }
+    }
+
+    private void setAnimation(View viewToAnimate, int position) {
+        // Simple fade and slide up animation for new items
+        Animation animation = AnimationUtils.loadAnimation(viewToAnimate.getContext(), android.R.anim.fade_in);
+        animation.setDuration(300);
+        viewToAnimate.startAnimation(animation);
     }
 
     @Override
@@ -65,9 +86,11 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     static class MessageViewHolder extends RecyclerView.ViewHolder {
         TextView tvMessage;
+        TextView tvTimestamp;
         public MessageViewHolder(@NonNull View itemView) {
             super(itemView);
             tvMessage = itemView.findViewById(R.id.tvMessage);
+            tvTimestamp = itemView.findViewById(R.id.tvTimestamp);
         }
     }
 

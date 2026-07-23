@@ -21,7 +21,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
-
+import android.util.Log;
 public class GroqService {
     private static final String API_URL = "https://api.groq.com/openai/v1/chat/completions";
     private static final String MODEL = "llama-3.3-70b-versatile";
@@ -59,10 +59,26 @@ public class GroqService {
         }
         jsonBody.add("messages", messagesArray);
 
-        RequestBody body = RequestBody.create(jsonBody.toString(), JSON);
+
+
+        RequestBody body =
+                RequestBody.create(
+                        jsonBody.toString(),
+                        JSON
+                );
+        // Debug logs
+        Log.d("GROQ_DEBUG", "API Key Length = " + ApiConfig.GROQ_API_KEY.length());
+
+        if (ApiConfig.GROQ_API_KEY.isEmpty()) {
+            Log.e("GROQ_DEBUG", "GROQ_API_KEY is EMPTY!");
+        } else {
+            Log.d("GROQ_DEBUG", "GROQ_API_KEY loaded successfully.");
+        }
+
         Request request = new Request.Builder()
                 .url(API_URL)
-                .addHeader("Authorization", "Bearer " + BuildConfig.GROQ_API_KEY)
+                .header("Authorization", "Bearer " + ApiConfig.GROQ_API_KEY)
+                .header("Content-Type", "application/json")
                 .post(body)
                 .build();
 
@@ -151,3 +167,4 @@ public class GroqService {
         }
     }
 }
+

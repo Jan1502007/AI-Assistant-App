@@ -55,7 +55,7 @@ public class GroqSpeechService {
 
         Request request = new Request.Builder()
                 .url(API_URL)
-                .addHeader("Authorization", "Bearer " + BuildConfig.GROQ_API_KEY)
+                .addHeader("Authorization", "Bearer " + ApiConfig.GROQ_API_KEY)
                 .post(requestBody)
                 .build();
 

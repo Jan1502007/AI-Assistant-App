@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary">#6366F1</color>
+    <color name="primary_variant">#4F46E5</color>
+    <color name="secondary">#818CF8</color>
+    <color name="accent">#A78BFA</color>
+
+    <color name="background">#0F172A</color>
+    <color name="surface">#1E293B</color>
+    <color name="on_primary">#FFFFFF</color>
+    <color name="on_background">#F8F9FB</color>
+    <color name="on_surface">#F8F9FB</color>
+    <color name="error">#F87171</color>
+
+    <color name="user_bubble">#4F46E5</color>
+    <color name="ai_bubble">#1E293B</color>
+    <color name="text_primary">#F8F9FB</color>
+    <color name="text_secondary">#94A3B8</color>
+    <color name="hint_text">#64748B</color>
+
+    <color name="white">#FFFFFF</color>
+    <color name="gray">#334155</color>
+    <color name="card_shadow">#40000000</color>
+</resources>

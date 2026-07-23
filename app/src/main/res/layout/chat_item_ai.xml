@@ -1,20 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="start"
     android:orientation="vertical"
-    android:padding="8dp">
+    android:paddingHorizontal="16dp"
+    android:paddingVertical="8dp">
 
-    <TextView
-        android:id="@+id/tvMessage"
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="64dp"
-        android:background="@drawable/bg_message_ai"
-        android:padding="12dp"
-        android:text="AI response"
-        android:textColor="@color/white"
-        android:textSize="16sp" />
+        app:cardBackgroundColor="@color/ai_bubble"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="2dp"
+        app:cardPreventCornerOverlap="false"
+        app:shapeAppearanceOverlay="@style/ShapeAppearance.AI"
+        app:strokeWidth="0dp">
+
+        <TextView
+            android:id="@+id/tvMessage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="12dp"
+            android:text="AI response"
+            android:textColor="@color/text_primary"
+            android:textSize="16sp" />
+    </com.google.android.material.card.MaterialCardView>
+
+    <TextView
+        android:id="@+id/tvTimestamp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="4dp"
+        android:text="12:00 PM"
+        android:textColor="@color/text_secondary"
+        android:textSize="10sp" />
 
 </LinearLayout>

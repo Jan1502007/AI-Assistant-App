@@ -54,6 +54,19 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.On
 
         binding.btnSend.setOnClickListener(v -> sendMessage());
         binding.btnMic.setOnClickListener(v -> toggleRecording());
+        
+        // Chip listeners
+        View.OnClickListener chipListener = v -> {
+            if (v instanceof com.google.android.material.chip.Chip) {
+                binding.etMessage.setText(((com.google.android.material.chip.Chip) v).getText());
+                sendMessage();
+            }
+        };
+        binding.chip1.setOnClickListener(chipListener);
+        binding.chip2.setOnClickListener(chipListener);
+        binding.chip3.setOnClickListener(chipListener);
+        binding.chip4.setOnClickListener(chipListener);
+
         binding.ivLogout.setOnClickListener(v -> {
             authManager.logout();
             startActivity(new Intent(MainActivity.this, LoginActivity.class));
@@ -77,6 +90,7 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.On
         try {
             audioRecorder.startRecording();
             binding.btnMic.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(this, android.R.color.holo_red_light)));
+            binding.btnMic.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(this, android.R.color.white)));
             Toast.makeText(this, "Recording started...", Toast.LENGTH_SHORT).show();
         } catch (IOException e) {
             Toast.makeText(this, "Recording failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -86,6 +100,7 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.On
     private void stopRecording() {
         File audioFile = audioRecorder.stopRecording();
         binding.btnMic.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.background)));
+        binding.btnMic.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.text_secondary)));
         
         if (audioFile != null) {
             Toast.makeText(this, "Transcribing...", Toast.LENGTH_SHORT).show();
@@ -118,6 +133,11 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.On
     private void sendMessage() {
         String text = binding.etMessage.getText().toString().trim();
         if (text.isEmpty()) return;
+
+        // Animate send button
+        binding.btnSend.animate().scaleX(0.8f).scaleY(0.8f).setDuration(100).withEndAction(() -> {
+            binding.btnSend.animate().scaleX(1.0f).scaleY(1.0f).setDuration(100);
+        });
 
         lastUserMessage = text;
         addMessage(new Message(text, Message.TYPE_USER));

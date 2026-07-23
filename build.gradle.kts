@@ -3,4 +3,8 @@ plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.kotlin.android) apply false
     alias(libs.plugins.google.services) apply false
+        //id("com.android.application") version "9.2.1" apply false
+        id("com.chaquo.python") version "17.0.0" apply false // Add this line
+
+
 }
