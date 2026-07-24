@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
+
 import com.example.myapplication.databinding.ActivityMainBinding;
 
 import java.io.File;
@@ -22,6 +23,9 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements MessageAdapter.OnRetryListener {
 
+    private static final String TAG = "MainActivity";
+    private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
+
     private ActivityMainBinding binding;
     private MessageAdapter adapter;
     private List<Message> messageList;
@@ -30,21 +34,23 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.On
     private GroqSpeechService speechService;
     private AudioRecorder audioRecorder;
     private String lastUserMessage = "";
-    private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        // Initialize Firebase Auth Manager
         authManager = new FirebaseAuthManager();
-        
-        // Initialize Groq service
+
+        // Initialize Groq services & Audio Recorder
         groqService = new GroqService();
         speechService = new GroqSpeechService();
         audioRecorder = new AudioRecorder(this);
 
+        // RecyclerView Setup
         messageList = new ArrayList<>();
         adapter = new MessageAdapter(messageList, this);
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -52,24 +58,12 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.On
 
         updateEmptyView();
 
+        // UI Event Listeners
         binding.btnSend.setOnClickListener(v -> sendMessage());
-        binding.btnMic.setOnClickListener(v -> toggleRecording());
-        
-        // Chip listeners
-        View.OnClickListener chipListener = v -> {
-            if (v instanceof com.google.android.material.chip.Chip) {
-                binding.etMessage.setText(((com.google.android.material.chip.Chip) v).getText());
-                sendMessage();
-            }
-        };
-        binding.chip1.setOnClickListener(chipListener);
-        binding.chip2.setOnClickListener(chipListener);
-        binding.chip3.setOnClickListener(chipListener);
-        binding.chip4.setOnClickListener(chipListener);
-
+        binding.btnVoice.setOnClickListener(v -> toggleRecording());
         binding.ivLogout.setOnClickListener(v -> {
             authManager.logout();
-            startActivity(new Intent(MainActivity.this, LoginActivity.class));
+            startActivity(new Intent(MainActivity.this, SigninActivity.class));
             finish();
         });
     }
@@ -89,8 +83,7 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.On
     private void startRecording() {
         try {
             audioRecorder.startRecording();
-            binding.btnMic.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(this, android.R.color.holo_red_light)));
-            binding.btnMic.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(this, android.R.color.white)));
+            binding.btnVoice.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(this, android.R.color.holo_red_light)));
             Toast.makeText(this, "Recording started...", Toast.LENGTH_SHORT).show();
         } catch (IOException e) {
             Toast.makeText(this, "Recording failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -99,9 +92,8 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.On
 
     private void stopRecording() {
         File audioFile = audioRecorder.stopRecording();
-        binding.btnMic.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.background)));
-        binding.btnMic.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.text_secondary)));
-        
+        binding.btnVoice.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.background)));
+
         if (audioFile != null) {
             Toast.makeText(this, "Transcribing...", Toast.LENGTH_SHORT).show();
             speechService.transcribe(audioFile, new GroqSpeechService.SpeechCallback() {
@@ -134,32 +126,26 @@ public class MainActivity extends AppCompatActivity implements MessageAdapter.On
         String text = binding.etMessage.getText().toString().trim();
         if (text.isEmpty()) return;
 
-        // Animate send button
-        binding.btnSend.animate().scaleX(0.8f).scaleY(0.8f).setDuration(100).withEndAction(() -> {
-            binding.btnSend.animate().scaleX(1.0f).scaleY(1.0f).setDuration(100);
-        });
-
         lastUserMessage = text;
         addMessage(new Message(text, Message.TYPE_USER));
         binding.etMessage.setText("");
-        
+
         callGroq(text);
     }
 
     private void callGroq(String prompt) {
-        // Show loading indicator
         addMessage(new Message("...", Message.TYPE_LOADING));
 
         groqService.sendMessage(prompt, new GroqService.GroqCallback() {
             @Override
             public void onSuccess(String response) {
-                removeLastMessage(); // Remove loading
+                removeLastMessage();
                 addMessage(new Message(response, Message.TYPE_AI));
             }
 
             @Override
             public void onError(String errorMessage) {
-                removeLastMessage(); // Remove loading
+                removeLastMessage();
                 addMessage(new Message(errorMessage, Message.TYPE_ERROR));
             }
         });

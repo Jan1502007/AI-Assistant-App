@@ -1,343 +1,354 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background">
 
+    <!-- ================= APP BAR ================= -->
+
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBar"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:background="@color/background"
-        app:elevation="0dp"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:contentInsetStart="0dp">
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp">
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent"
+            <LinearLayout
+                android:layout_width="wrap_content"
                 android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/ic_google" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:text="AI ASSISTANT"
+                    android:textColor="@color/white"
+                    android:textSize="20sp"
+                    android:textStyle="bold"/>
+
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/ivLogout"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="end|center_vertical"
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                app:tint="@color/white"/>
+
+        </androidx.appcompat.widget.Toolbar>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- ================ GOOGLE SIGN IN ================= -->
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_google_signin"
+        android:layout_width="260dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="16dp"
+        android:text="Sign in with Google"
+        android:textAllCaps="false"
+        android:textColor="@android:color/black"
+        android:backgroundTint="@android:color/white"
+        app:cornerRadius="24dp"
+        app:icon="@drawable/bg_google_btn"
+        app:iconGravity="textStart"
+        app:iconPadding="12dp"
+        app:iconTint="@null"
+        app:layout_constraintTop_toBottomOf="@id/appBar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- ================= CHAT LIST ================= -->
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:padding="8dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/btn_google_signin"
+        app:layout_constraintBottom_toTopOf="@id/inputArea"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- ================= EMPTY HOME SCREEN ================= -->
+
+    <ScrollView
+        android:id="@+id/emptyView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintTop_toBottomOf="@id/btn_google_signin"
+        app:layout_constraintBottom_toTopOf="@id/inputArea"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- ================= TOP BAR ================= -->
+
+            <RelativeLayout
+                android:id="@+id/topBar"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
                 android:paddingHorizontal="16dp">
 
                 <ImageView
-                    android:id="@+id/ivMenu"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@android:drawable/ic_menu_sort_by_size"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:tint="@color/text_secondary" />
-
-                <ImageView
-                    android:id="@+id/ivLogo"
+                    android:id="@+id/btnMenu"
                     android:layout_width="28dp"
                     android:layout_height="28dp"
-                    android:layout_marginStart="12dp"
-                    android:src="@drawable/ic_fisheye_logo"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toEndOf="@id/ivMenu"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/ic_menu"
+                    app:tint="#1A1A1A"/>
 
+                <ImageView
+                    android:id="@+id/btnNewChat"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/ic_add_chat"
+                    app:tint="#1A1A1A"/>
+
+            </RelativeLayout>
+
+            <!-- CENTER CONTENT -->
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="24dp">
+
+                <!-- Logo + Title -->
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:orientation="vertical"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toEndOf="@id/ivLogo"
-                    app:layout_constraintTop_toTopOf="parent">
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_marginEnd="8dp"
+                        android:src="@drawable/ic_google"/>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="AI Assistant"
-                        android:textColor="@color/text_primary"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
+                        android:text="Start chatting with Instant"
+                        android:textColor="#1A1A1A"
+                        android:textSize="20sp"
+                        android:textStyle="bold"/>
 
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
-
-                        <View
-                            android:layout_width="8dp"
-                            android:layout_height="8dp"
-                            android:background="@drawable/ic_online_indicator"
-                            android:backgroundTint="#10B981" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="4dp"
-                            android:text="Online"
-                            android:textColor="#10B981"
-                            android:textSize="12sp" />
-                    </LinearLayout>
                 </LinearLayout>
 
+                <!-- Mode Toggle -->
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="24dp"
+                    android:background="@drawable/bg_mode_toggle"
+                    android:orientation="horizontal"
+                    android:padding="3dp">
+
+                    <TextView
+                        android:id="@+id/btnInstant"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_mode_active"
+                        android:gravity="center"
+                        android:drawableStart="@drawable/ic_bolt"
+                        android:drawablePadding="4dp"
+                        android:paddingHorizontal="8dp"
+                        android:text="Instant"
+                        android:textColor="#3B82F6"
+                        android:textStyle="bold"
+                        android:textSize="14sp"/>
+
+                    <TextView
+                        android:id="@+id/btnExpert"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:drawableStart="@drawable/ic_diamond"
+                        android:drawablePadding="4dp"
+                        android:paddingHorizontal="8dp"
+                        android:text="Expert"
+                        android:textColor="#4B5563"
+                        android:textSize="14sp"/>
+
+                    <TextView
+                        android:id="@+id/btnVision"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:drawableStart="@drawable/ic_vision"
+                        android:drawablePadding="4dp"
+                        android:paddingHorizontal="8dp"
+                        android:text="Vision"
+                        android:textColor="#4B5563"
+                        android:textSize="14sp"/>
+
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvDescription"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="Instant responses for daily conversations"
+                    android:textColor="#8E8E93"
+                    android:textSize="13sp"/>
+
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="32dp"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </ScrollView>
+
+    <!-- Bottom Input Area -->
+
+    <LinearLayout
+        android:id="@+id/inputArea"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:background="@drawable/bg_bottom_card"
+        android:orientation="vertical"
+        android:padding="12dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <EditText
+            android:id="@+id/etMessage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@null"
+            android:hint="Type a message or hold to speak"
+            android:textColor="#1A1A1A"
+            android:textColorHint="#9CA3AF"
+            android:textSize="15sp"
+            android:paddingVertical="8dp"/>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp">
+            <!-- Left Action Chips -->
+            <LinearLayout
+                android:id="@+id/leftActions"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/chipThink"
+                    android:layout_width="wrap_content"
+                    android:layout_height="32dp"
+                    android:background="@drawable/bg_chip"
+                    android:gravity="center"
+                    android:drawableStart="@drawable/ic_atom"
+                    android:drawablePadding="4dp"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:text="Think"
+                    android:textColor="#374151"
+                    android:textSize="13sp"/>
+
+                <TextView
+                    android:id="@+id/chipSearch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="32dp"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_chip"
+                    android:gravity="center"
+                    android:drawableStart="@drawable/ic_globe"
+                    android:drawablePadding="4dp"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:text="Search"
+                    android:textColor="#3B82F6"
+                    android:textSize="13sp"/>
+
+            </LinearLayout>
+
+            <!-- Right Action Buttons -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:orientation="horizontal">
+
                 <ImageView
-                    android:id="@+id/ivSettings"
+                    android:id="@+id/btnAdd"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:layout_marginEnd="16dp"
-                    android:src="@android:drawable/ic_menu_preferences"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@id/ivLogout"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:tint="@color/text_secondary" />
+                    android:contentDescription="Add"
+                    android:src="@drawable/ic_plus_circle"
+                    app:tint="#1A1A1A"/>
 
+                <!-- Renamed to avoid duplicate ID -->
                 <ImageView
-                    android:id="@+id/ivLogout"
+                    android:id="@+id/btnVoice"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
-                    android:src="@android:drawable/ic_menu_close_clear_cancel"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:tint="@color/text_secondary" />
+                    android:contentDescription="Voice"
+                    android:src="@drawable/ic_mic"
+                    app:tint="#1A1A1A"/>
 
-            </androidx.constraintlayout.widget.ConstraintLayout>
-        </androidx.appcompat.widget.Toolbar>
-    </com.google.android.material.appbar.AppBarLayout>
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:clipToPadding="false"
-        android:paddingBottom="16dp"
-        app:layout_constraintBottom_toTopOf="@id/inputArea"
-        app:layout_constraintTop_toBottomOf="@id/appBar" />
-
-    <androidx.core.widget.NestedScrollView
-        android:id="@+id/emptyView"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:fillViewport="true"
-        android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@id/inputArea"
-        app:layout_constraintTop_toBottomOf="@id/appBar">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:orientation="vertical"
-            android:padding="24dp">
-
-            <ImageView
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                android:layout_marginTop="48dp"
-                android:src="@drawable/ic_fisheye_logo" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:text="Hello 👋"
-                android:textColor="@color/text_primary"
-                android:textSize="28sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="How can I help you today?"
-                android:textColor="@color/text_secondary"
-                android:textSize="16sp" />
-
-            <com.google.android.material.chip.ChipGroup
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                app:chipSpacingVertical="8dp">
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chip1"
-                    style="@style/Widget.MaterialComponents.Chip.Action"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Explain this code"
-                    app:chipBackgroundColor="@color/surface"
-                    app:chipStrokeColor="@color/gray"
-                    app:chipStrokeWidth="1dp" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chip2"
-                    style="@style/Widget.MaterialComponents.Chip.Action"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Summarize PDF"
-                    app:chipBackgroundColor="@color/surface"
-                    app:chipStrokeColor="@color/gray"
-                    app:chipStrokeWidth="1dp" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chip3"
-                    style="@style/Widget.MaterialComponents.Chip.Action"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Generate Java code"
-                    app:chipBackgroundColor="@color/surface"
-                    app:chipStrokeColor="@color/gray"
-                    app:chipStrokeWidth="1dp" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chip4"
-                    style="@style/Widget.MaterialComponents.Chip.Action"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Fix Android errors"
-                    app:chipBackgroundColor="@color/surface"
-                    app:chipStrokeColor="@color/gray"
-                    app:chipStrokeWidth="1dp" />
-
-            </com.google.android.material.chip.ChipGroup>
-        </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/inputArea"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="16dp"
-        app:layout_constraintBottom_toBottomOf="parent">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/bg_input_container"
-            android:orientation="vertical"
-            android:padding="8dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <EditText
-                android:id="@+id/etMessage"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@null"
-                android:hint="Message AI Assistant..."
-                android:minHeight="48dp"
-                android:paddingHorizontal="12dp"
-                android:paddingTop="8dp"
-                android:textColor="@color/text_primary"
-                android:textColorHint="@color/hint_text"
-                android:textSize="16sp" />
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp">
-
-                <LinearLayout
-                    android:layout_width="0dp"
+                <ImageButton
+                    android:id="@+id/btnSend"
+                    android:layout_width="40dp"
                     android:layout_height="40dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@id/rightIcons"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent">
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginStart="12dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Send"
+                    android:padding="8dp"
+                    android:src="@android:drawable/ic_menu_send"
+                    app:tint="@color/primary"/>
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnDeepThink"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="32dp"
-                        android:insetTop="0dp"
-                        android:insetBottom="0dp"
-                        android:paddingHorizontal="8dp"
-                        android:text="DeepThink"
-                        android:textAllCaps="false"
-                        android:textSize="11sp"
-                        app:cornerRadius="16dp"
-                        app:icon="@android:drawable/ic_menu_view"
-                        app:iconPadding="4dp"
-                        app:iconSize="14dp"
-                        app:strokeColor="@color/gray" />
+            </LinearLayout>
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnSearch"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="32dp"
-                        android:layout_marginStart="4dp"
-                        android:insetTop="0dp"
-                        android:insetBottom="0dp"
-                        android:paddingHorizontal="8dp"
-                        android:text="Search"
-                        android:textAllCaps="false"
-                        android:textSize="11sp"
-                        app:cornerRadius="16dp"
-                        app:icon="@android:drawable/ic_menu_search"
-                        app:iconPadding="4dp"
-                        app:iconSize="14dp"
-                        app:strokeColor="@color/gray" />
+        </RelativeLayout>
 
-                    <ImageView
-                        android:id="@+id/btnCamera"
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:layout_marginStart="4dp"
-                        android:alpha="0.5"
-                        android:padding="6dp"
-                        android:src="@android:drawable/ic_menu_camera"
-                        app:tint="@color/text_secondary" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/rightIcons"
-                    android:layout_width="wrap_content"
-                    android:layout_height="40dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent">
-
-                    <ImageView
-                        android:id="@+id/btnMic"
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:padding="6dp"
-                        android:src="@android:drawable/ic_btn_speak_now"
-                        app:tint="@color/text_secondary" />
-
-                    <ImageView
-                        android:id="@+id/btnAttach"
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:layout_marginStart="4dp"
-                        android:padding="6dp"
-                        android:src="@android:drawable/ic_menu_share"
-                        app:tint="@color/text_secondary" />
-
-                    <com.google.android.material.floatingactionbutton.FloatingActionButton
-                        android:id="@+id/btnSend"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        app:backgroundTint="@color/primary"
-                        app:elevation="0dp"
-                        app:fabSize="mini"
-                        app:srcCompat="@android:drawable/ic_menu_send"
-                        app:tint="@color/white" />
-                </LinearLayout>
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-        </LinearLayout>
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
